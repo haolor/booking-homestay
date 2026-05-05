@@ -13,7 +13,7 @@ py -3.13 -m venv .venv
 pip install -r requirements/development.txt
 # Tùy chọn: copy .env.example -> .env và chỉnh DATABASE_URL (hoặc để trống để dùng SQLite)
 py manage.py migrate
-py manage.py seed_demo   # tuỳ chọn: homestay + user demo (mật khẩu demo12345)
+py manage.py seed_demo   # để sinh ra tài khoản admin demo(admin@gmail.com|demo12345)
 py manage.py runserver
 ```
 
