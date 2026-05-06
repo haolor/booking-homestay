@@ -115,6 +115,12 @@ export function AdminDashboard() {
           >
             Đơn đặt phòng
           </Link>
+          <Link
+            to="/admin/customers"
+            className="rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium px-4 py-2.5 border border-slate-700 transition"
+          >
+            Quản lý Customer
+          </Link>
         </div>
       </div>
 

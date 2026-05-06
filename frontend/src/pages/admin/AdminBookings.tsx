@@ -9,6 +9,7 @@ function statusVi(s: string): string {
     pending: 'Chờ chủ nhà',
     awaiting_payment: 'Chờ thanh toán',
     confirmed: 'Đã xác nhận',
+    checked_in: 'Đã nhận phòng',
     cancelled: 'Đã hủy',
     completed: 'Hoàn thành',
     rejected: 'Từ chối',
@@ -77,6 +78,7 @@ export function AdminBookings() {
           <option value="pending">Chờ chủ nhà</option>
           <option value="awaiting_payment">Chờ thanh toán</option>
           <option value="confirmed">Đã xác nhận</option>
+          <option value="checked_in">Đã nhận phòng</option>
           <option value="cancelled">Đã hủy</option>
           <option value="completed">Hoàn thành</option>
           <option value="rejected">Từ chối</option>

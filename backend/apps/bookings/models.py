@@ -12,6 +12,7 @@ class Booking(models.Model):
         PENDING = "pending", "Pending host response"
         AWAITING_PAYMENT = "awaiting_payment", "Awaiting payment"
         CONFIRMED = "confirmed", "Confirmed"
+        CHECKED_IN = "checked_in", "Checked in"
         CANCELLED = "cancelled", "Cancelled"
         COMPLETED = "completed", "Completed"
         REJECTED = "rejected", "Rejected"
@@ -72,7 +73,7 @@ class Booking(models.Model):
         return subtotal, service_fee, total
 
     def mark_completed_if_past_checkout(self) -> bool:
-        if self.status != self.Status.CONFIRMED:
+        if self.status not in (self.Status.CONFIRMED, self.Status.CHECKED_IN):
             return False
         today = timezone.localdate()
         if today > self.check_out_date:

@@ -6,7 +6,7 @@ import { AdminHostDetailDrawer } from './AdminHostDetailDrawer';
 
 export function AdminHostList() {
   const [selectedHost, setSelectedHost] = useState<AdminHostRow | null>(null);
-  
+
   const { data: hosts, isLoading } = useQuery({
     queryKey: ['admin', 'hosts'],
     queryFn: async () => {
@@ -75,9 +75,8 @@ export function AdminHostList() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-bold uppercase tracking-wider ${
-                          h.is_active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
-                        }`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-bold uppercase tracking-wider ${h.is_active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+                          }`}
                       >
                         {h.is_active ? 'Active' : 'Locked'}
                       </span>

@@ -5,6 +5,7 @@ from apps.admin_api import views
 urlpatterns = [
     path("dashboard/", views.AdminDashboardView.as_view(), name="admin-dashboard"),
     path("hosts/", views.AdminHostListView.as_view(), name="admin-hosts"),
+    path("customers/", views.AdminCustomerListView.as_view(), name="admin-customers"),
     path("amenities/", views.AdminAmenityListView.as_view(), name="admin-amenities"),
     path("homestays/", views.AdminHomestayListCreateView.as_view(), name="admin-homestays"),
     path(

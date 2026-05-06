@@ -106,3 +106,21 @@ class AdminHostMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "email", "full_name", "phone_number", "is_active", "date_joined")
+
+
+class AdminCustomerMiniSerializer(serializers.ModelSerializer):
+    booking_count = serializers.IntegerField(read_only=True)
+    last_booking_at = serializers.DateTimeField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "email",
+            "full_name",
+            "phone_number",
+            "is_active",
+            "date_joined",
+            "booking_count",
+            "last_booking_at",
+        )

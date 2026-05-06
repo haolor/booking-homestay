@@ -3,6 +3,7 @@ import { RequireAdmin } from './components/auth/RequireAdmin';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { AdminBookings } from './pages/admin/AdminBookings';
+import { AdminCustomers } from './pages/admin/AdminCustomers';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminHomestayForm } from './pages/admin/AdminHomestayForm';
 import { AdminHomestayList } from './pages/admin/AdminHomestayList';
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="homestays/:id" element={<AdminHomestayForm />} />
             <Route path="bookings" element={<AdminBookings />} />
             <Route path="hosts" element={<AdminHostList />} />
+            <Route path="customers" element={<AdminCustomers />} />
           </Route>
         </Route>
 

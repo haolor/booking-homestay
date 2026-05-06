@@ -98,6 +98,17 @@ export type AdminHostRow = {
   date_joined: string;
 };
 
+export type AdminCustomerRow = {
+  id: string;
+  email: string;
+  full_name: string;
+  phone_number: string;
+  is_active: boolean;
+  date_joined: string;
+  booking_count: number;
+  last_booking_at: string | null;
+};
+
 
 export type AdminHomestayDetail = {
   id: string;

@@ -79,14 +79,31 @@ export function BookingDetail() {
       new Date(b.can_cancel_until).getTime() > Date.now(),
   );
 
+  const statusVi: Record<string, string> = {
+    pending: 'Chờ chủ nhà xác nhận',
+    awaiting_payment: 'Chờ thanh toán',
+    confirmed: 'Đã xác nhận',
+    checked_in: 'Đã nhận phòng',
+    cancelled: 'Đã hủy',
+    completed: 'Hoàn thành',
+    rejected: 'Đã từ chối',
+  };
+
   return (
     <div className="max-w-xl mx-auto px-4 py-10 space-y-4">
-      <h1 className="text-2xl font-semibold">Đặt phòng</h1>
-      <p className="text-slate-600">{b.homestay_title}</p>
-      <p className="text-sm">
-        Trạng thái: <span className="font-medium">{b.status}</span>
-        {b.checked_in_at && <span className="ml-2 text-emerald-600 font-semibold"> (Đã Check-in)</span>}
-      </p>
+      <h1 className="text-2xl font-semibold text-stone-800">Đặt phòng</h1>
+      <p className="text-slate-600 font-medium">{b.homestay_title}</p>
+      <div className="flex items-center gap-3">
+        <p className="text-sm">
+          Trạng thái: <span className={`font-bold ${
+            b.status === 'checked_in' ? 'text-indigo-600' : 
+            b.status === 'confirmed' ? 'text-emerald-600' : 
+            'text-slate-700'
+          }`}>{statusVi[b.status] || b.status}</span>
+        </p>
+        {b.checked_in_at && <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">In House</span>}
+      </div>
+
       {b.checked_in_at && (
         <p className="text-xs text-slate-500">
           Thời gian Check-in: {new Date(b.checked_in_at).toLocaleString('vi-VN')}

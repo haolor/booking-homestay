@@ -61,6 +61,12 @@ export function AdminLayout() {
             </svg>
             Quản lý Host
           </NavLink>
+          <NavLink to="/admin/customers" className={({ isActive }) => navClass(isActive)}>
+            <svg className="h-5 w-5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeWidth={2} d="M17 20h5v-1a4 4 0 00-5.88-3.53M17 20H7m10 0v-1c0-1.16-.43-2.22-1.14-3.03M7 20H2v-1a4 4 0 015.88-3.53M7 20v-1c0-1.16.43-2.22 1.14-3.03M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 2a2 2 0 11-4 0 2 2 0 014 0zM7 9a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            Quản lý Customer
+          </NavLink>
         </nav>
         <div className="p-4 border-t border-slate-800">
           <NavLink
@@ -131,6 +137,14 @@ export function AdminLayout() {
           }
         >
           <span>Đơn</span>
+        </NavLink>
+        <NavLink
+          to="/admin/customers"
+          className={({ isActive }) =>
+            `text-[10px] font-medium flex flex-col items-center gap-0.5 ${isActive ? 'text-brand-400' : 'text-slate-500'}`
+          }
+        >
+          <span>KH</span>
         </NavLink>
       </nav>
     </div>

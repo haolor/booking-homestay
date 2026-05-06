@@ -110,9 +110,8 @@ export function AdminHostDetailDrawer({ host, onClose }: Props) {
                         <span className="text-[10px] font-bold text-brand-400">
                           {new Intl.NumberFormat('vi-VN').format(Number.parseFloat(hs.price_per_night))} ₫
                         </span>
-                        <span className={`text-[10px] uppercase font-bold ${
-                          hs.status === 'published' ? 'text-emerald-500' : 'text-slate-500'
-                        }`}>
+                        <span className={`text-[10px] uppercase font-bold ${hs.status === 'published' ? 'text-emerald-500' : 'text-slate-500'
+                          }`}>
                           {hs.status}
                         </span>
                       </div>

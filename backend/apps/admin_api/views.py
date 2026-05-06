@@ -1,7 +1,7 @@
 from datetime import timedelta
 from decimal import Decimal
 
-from django.db.models import Count, Sum
+from django.db.models import Count, Max, Sum
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.admin_api.serializers import (
+    AdminCustomerMiniSerializer,
     AdminHomestayListSerializer,
     AdminHomestaySerializer,
     AdminHostMiniSerializer,
@@ -83,6 +84,22 @@ class AdminHostListView(generics.ListAPIView):
     serializer_class = AdminHostMiniSerializer
     pagination_class = None
     queryset = User.objects.filter(role=User.Role.HOST, is_active=True).order_by("email")
+
+
+class AdminCustomerListView(generics.ListAPIView):
+    permission_classes = (permissions.IsAuthenticated, IsAdmin)
+    serializer_class = AdminCustomerMiniSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return (
+            User.objects.filter(role=User.Role.GUEST)
+            .annotate(
+                booking_count=Count("guest_bookings", distinct=True),
+                last_booking_at=Max("guest_bookings__created_at"),
+            )
+            .order_by("-date_joined")
+        )
 
 
 class AdminAmenityListView(generics.ListAPIView):

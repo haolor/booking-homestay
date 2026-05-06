@@ -26,6 +26,7 @@ def expire_awaiting_payment():
 def auto_complete_bookings():
     today = timezone.localdate()
     for b in Booking.objects.filter(
-        status=Booking.Status.CONFIRMED, check_out_date__lt=today
+        status__in=[Booking.Status.CONFIRMED, Booking.Status.CHECKED_IN],
+        check_out_date__lt=today
     ):
         b.mark_completed_if_past_checkout()

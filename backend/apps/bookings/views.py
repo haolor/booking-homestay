@@ -149,6 +149,16 @@ class BookingCheckinView(APIView):
             raise PermissionDenied()
         if booking.status != Booking.Status.CONFIRMED:
             raise ValidationError("Booking must be confirmed.")
-        booking.checked_in_at = timezone.now()
-        booking.save(update_fields=["checked_in_at", "updated_at"])
+        
+        now = timezone.now()
+        today = timezone.localdate()
+        
+        booking.checked_in_at = now
+        # Nếu ngày trả phòng đã qua rồi (so với hôm nay) thì hoàn thành luôn
+        if today > booking.check_out_date:
+            booking.status = Booking.Status.COMPLETED
+        else:
+            booking.status = Booking.Status.CHECKED_IN
+            
+        booking.save(update_fields=["status", "checked_in_at", "updated_at"])
         return Response(BookingSerializer(booking).data)
