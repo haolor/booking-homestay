@@ -51,8 +51,14 @@ export function BookingDetail() {
     },
     onError: (e) => setActionError(formatApiError(e, 'Không hủy được booking.')),
   });
+  const checkIn = useMutation({
+    mutationFn: () => api.post(`/bookings/${id}/checkin/`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['booking', id] }),
+    onError: (e) => setActionError(formatApiError(e, 'Không thực hiện được check-in.')),
+  });
 
   if (!me) {
+
     return (
       <div className="p-8 text-center">
         <Link to="/login" className="text-brand-600">
@@ -65,7 +71,6 @@ export function BookingDetail() {
     return <div className="p-8 text-center text-slate-500">Đang tải…</div>;
   }
 
-  const isHostOrAdmin = meProfile?.role === 'host' || meProfile?.role === 'admin';
   const canGuestCancel = Boolean(
     b.can_cancel_until &&
       b.status !== 'cancelled' &&
@@ -80,7 +85,13 @@ export function BookingDetail() {
       <p className="text-slate-600">{b.homestay_title}</p>
       <p className="text-sm">
         Trạng thái: <span className="font-medium">{b.status}</span>
+        {b.checked_in_at && <span className="ml-2 text-emerald-600 font-semibold"> (Đã Check-in)</span>}
       </p>
+      {b.checked_in_at && (
+        <p className="text-xs text-slate-500">
+          Thời gian Check-in: {new Date(b.checked_in_at).toLocaleString('vi-VN')}
+        </p>
+      )}
       <p className="text-sm">
         {b.check_in_date} → {b.check_out_date} · {b.num_guests} khách
       </p>
@@ -101,48 +112,63 @@ export function BookingDetail() {
           <span>{Number(b.total_price).toLocaleString('vi-VN')} ₫</span>
         </div>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {isHostOrAdmin && (
-          <>
-            <button
-              type="button"
-              onClick={() => confirm.mutate()}
-              className="rounded-md bg-emerald-600 text-white px-4 py-2 text-sm disabled:opacity-50"
-              disabled={b.status !== 'pending' || confirm.isPending}
-            >
-              Host: Xác nhận
-            </button>
-            <button
-              type="button"
-              onClick={() => reject.mutate()}
-              className="rounded-md border border-slate-300 px-4 py-2 text-sm disabled:opacity-50"
-              disabled={b.status !== 'pending' || reject.isPending}
-            >
-              Host: Từ chối
-            </button>
-          </>
-        )}
-        <button
-          type="button"
-          onClick={() => pay.mutate()}
-          className="rounded-md bg-brand-600 text-white px-4 py-2 text-sm disabled:opacity-50"
-          disabled={b.status !== 'awaiting_payment' || pay.isPending}
-        >
-          Thanh toán VNPay
-        </button>
-        <button
-          type="button"
-          onClick={() => cancel.mutate()}
-          className="rounded-md border border-red-200 text-red-700 px-4 py-2 text-sm disabled:opacity-50"
-          disabled={!canGuestCancel || cancel.isPending}
-        >
-          Hủy đặt phòng
-        </button>
-      </div>
+      {meProfile?.role !== 'admin' && (
+        <div className="flex flex-wrap gap-2">
+          {meProfile?.role === 'host' && (
+            <>
+              <button
+                type="button"
+                onClick={() => confirm.mutate()}
+                className="rounded-md bg-emerald-600 text-white px-4 py-2 text-sm disabled:opacity-50"
+                disabled={b.status !== 'pending' || confirm.isPending}
+              >
+                Host: Xác nhận
+              </button>
+              <button
+                type="button"
+                onClick={() => reject.mutate()}
+                className="rounded-md border border-slate-300 px-4 py-2 text-sm disabled:opacity-50"
+                disabled={b.status !== 'pending' || reject.isPending}
+              >
+                Host: Từ chối
+              </button>
+              <button
+                type="button"
+                onClick={() => checkIn.mutate()}
+                className="rounded-md bg-indigo-600 text-white px-4 py-2 text-sm disabled:opacity-50"
+                disabled={b.status !== 'confirmed' || !!b.checked_in_at || checkIn.isPending}
+              >
+                Xác nhận Check-in
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={() => pay.mutate()}
+            className="rounded-md bg-brand-600 text-white px-4 py-2 text-sm disabled:opacity-50"
+            disabled={b.status !== 'awaiting_payment' || pay.isPending}
+          >
+            Thanh toán VNPay
+          </button>
+          <button
+            type="button"
+            onClick={() => cancel.mutate()}
+            className="rounded-md border border-red-200 text-red-700 px-4 py-2 text-sm disabled:opacity-50"
+            disabled={!canGuestCancel || cancel.isPending}
+          >
+            Hủy đặt phòng
+          </button>
+        </div>
+      )}
+
+
       {actionError && <p className="text-sm text-red-600">{actionError}</p>}
-      <p className="text-xs text-slate-500">
-        Bạn có thể hủy trong 30 phút từ lúc đặt phòng. Nếu phòng còn trống, bạn có thể thanh toán ngay.
-      </p>
+      {meProfile?.role !== 'admin' && (
+        <p className="text-xs text-slate-500">
+          Bạn có thể hủy trong 30 phút từ lúc đặt phòng. Nếu phòng còn trống, bạn có thể thanh toán ngay.
+        </p>
+      )}
     </div>
+
   );
 }

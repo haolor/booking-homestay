@@ -6,6 +6,7 @@ import { AdminBookings } from './pages/admin/AdminBookings';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminHomestayForm } from './pages/admin/AdminHomestayForm';
 import { AdminHomestayList } from './pages/admin/AdminHomestayList';
+import { AdminHostList } from './pages/admin/AdminHostList';
 import { BookingDetail } from './pages/BookingDetail';
 import { Home } from './pages/Home';
 import { HomestayDetailPage } from './pages/HomestayDetail';
@@ -29,6 +30,7 @@ export default function App() {
             <Route path="homestays/new" element={<AdminHomestayForm />} />
             <Route path="homestays/:id" element={<AdminHomestayForm />} />
             <Route path="bookings" element={<AdminBookings />} />
+            <Route path="hosts" element={<AdminHostList />} />
           </Route>
         </Route>
 

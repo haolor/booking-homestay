@@ -89,6 +89,16 @@ export type AdminHostOption = {
   full_name: string;
 };
 
+export type AdminHostRow = {
+  id: string;
+  email: string;
+  full_name: string;
+  phone_number: string;
+  is_active: boolean;
+  date_joined: string;
+};
+
+
 export type AdminHomestayDetail = {
   id: string;
   host: string;
@@ -135,5 +145,7 @@ export type Booking = {
   total_price: string;
   payment_deadline_at?: string | null;
   can_cancel_until?: string | null;
+  checked_in_at?: string | null;
   created_at?: string;
+
 };

@@ -95,7 +95,7 @@ class AdminAmenityListView(generics.ListAPIView):
 class AdminHomestayListCreateView(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticated, IsAdmin)
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["status", "type", "pending_admin_review"]
+    filterset_fields = ["status", "type", "pending_admin_review", "host"]
     search_fields = ["title", "city", "address", "district"]
     ordering_fields = ["created_at", "price_per_night", "title", "avg_rating"]
     ordering = ["-created_at"]

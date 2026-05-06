@@ -105,4 +105,4 @@ class AdminHomestaySerializer(serializers.ModelSerializer):
 class AdminHostMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "email", "full_name")
+        fields = ("id", "email", "full_name", "phone_number", "is_active", "date_joined")

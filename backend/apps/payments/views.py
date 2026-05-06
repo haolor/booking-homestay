@@ -12,7 +12,7 @@ from apps.bookings.models import Booking
 from apps.payments.models import Payment
 from apps.users.models import User
 from apps.payments.serializers import PaymentCreateSerializer, PaymentSerializer
-from apps.payments import vnpay as vnpay_util
+
 
 #PaymentCreateView: Tạo thanh toán
 class PaymentCreateView(APIView):
@@ -38,6 +38,8 @@ class PaymentCreateView(APIView):
         )
         if payment.status == Payment.Status.SUCCESS:
             return Response({"detail": "Already paid.", "payment": PaymentSerializer(payment).data})
+        
+        # Môi trường giả lập (Mock)
         if settings.VNPAY_MOCK_ENABLED:
             query = urlencode({"mock": "1", "payment_id": str(payment.id)})
             redirect_url = f"{settings.FRONTEND_URL.rstrip('/')}/payment/vnpay-return?{query}"
@@ -48,26 +50,11 @@ class PaymentCreateView(APIView):
                     "mock": True,
                 }
             )
-        secret = settings.VNPAY_HASH_SECRET
-        if not secret:
-            return Response(
-                {"detail": "VNPay not configured", "payment": PaymentSerializer(payment).data},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE,
-            )
-        order_id = str(payment.id)
-        ip = request.META.get("REMOTE_ADDR", "127.0.0.1")
-        amount_vnd = vnpay_util.amount_from_booking_total(booking.total_price)
-        params = vnpay_util.default_vnpay_params(
-            amount_vnd=amount_vnd,
-            order_id=order_id,
-            order_desc=f"Booking {booking.id}",
-            client_ip=ip,
+        
+        return Response(
+            {"detail": "VNPAY_MOCK_ENABLED is false. Real VNPay not configured or disabled."},
+            status=status.HTTP_400_BAD_REQUEST
         )
-        url = vnpay_util.build_payment_url(
-            params, secret, settings.VNPAY_PAYMENT_URL
-        )
-        return Response({"redirect_url": url, "payment": PaymentSerializer(payment).data})
-
 
 #VNPayReturnView: Trả về kết quả thanh toán VNPay
 class VNPayReturnView(APIView):
@@ -98,36 +85,7 @@ class VNPayReturnView(APIView):
                 booking.save(update_fields=["status", "updated_at"])
             return Response({"mock": True, "payment": PaymentSerializer(payment).data})
 
-        secret = settings.VNPAY_HASH_SECRET
-        q = {k: v for k, v in request.query_params.items()}
-        if not secret or not vnpay_util.verify_return(q, secret):
-            return Response({"detail": "invalid signature"}, status=400)
-        if q.get("vnp_ResponseCode") != "00":
-            return Response({"detail": "payment failed", "query": q})
-        payment_id = q.get("vnp_TxnRef")
-        payment = get_object_or_404(Payment, id=payment_id)
-        payment.status = Payment.Status.SUCCESS
-        payment.transaction_id = q.get("vnp_TransactionNo", "")
-        payment.paid_at = timezone.now()
-        payment.raw_response = json.loads(json.dumps(q))
-        payment.save()
-        booking = payment.booking
-        if booking.status == Booking.Status.AWAITING_PAYMENT:
-            booking.status = Booking.Status.CONFIRMED
-            booking.save(update_fields=["status", "updated_at"])
-        return Response(PaymentSerializer(payment).data)
-
-
-#StripeWebhookView: Trả về kết quả thanh toán Stripe
-class StripeWebhookView(APIView):
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, request):
-        if not settings.STRIPE_WEBHOOK_SECRET:
-            return Response({"detail": "Stripe not configured"}, status=501)
-        # Real implementation: verify Stripe-Signature header
-        return Response({"received": True})
-
+        return Response({"detail": "Mock environment not enabled or invalid request"}, status=400)
 
 #PaymentByBookingView: Lấy thông tin thanh toán theo booking
 class PaymentByBookingView(APIView):
