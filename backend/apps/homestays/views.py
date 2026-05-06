@@ -32,6 +32,7 @@ class HomestayListCreateView(generics.ListCreateAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_class = HomestayFilter
 
+    #Truy vấn dữ liệu
     def get_queryset(self):
         user = self.request.user
         mine = self.request.query_params.get("mine")
@@ -50,36 +51,42 @@ class HomestayListCreateView(generics.ListCreateAPIView):
             .prefetch_related("images", "homestay_amenities")
         )
 
+    #chuẩn bị khuôn
     def get_serializer_class(self):
         if self.request.method == "POST":
             return HomestayDetailSerializer
         return HomestayListSerializer
 
+    #xác thực quyền hạn
     def get_permissions(self):
         if self.request.method == "POST":
             return [permissions.IsAuthenticated(), IsHost()]
         return [permissions.AllowAny()]
 
+    #Thêm dữ liệu
     def perform_create(self, serializer):
         serializer.save(host=self.request.user)
 
 
 class HomestayDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = "id"
-
+    #truy vấn dữ liệu
     def get_queryset(self):
         return Homestay.objects.all().prefetch_related(
             "images", "homestay_amenities__amenity"
         )
 
+    #chuẩn bị khuôn
     def get_serializer_class(self):
         return HomestayDetailSerializer
 
+    #xác thực quyền hạn
     def get_permissions(self):
         if self.request.method in ("GET",):
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated(), IsHomestayOwner()]
 
+    #Lấy dữ liệu
     def get_object(self):
         obj = super().get_object()
         if self.request.method == "GET" and obj.status != Homestay.Status.PUBLISHED:
@@ -90,6 +97,7 @@ class HomestayDetailView(generics.RetrieveUpdateDestroyAPIView):
                 raise Http404()
         return obj
 
+    #Xóa dữ liệu
     def perform_destroy(self, instance):
         from apps.bookings.models import Booking
 
@@ -108,6 +116,7 @@ class HomestayDetailView(generics.RetrieveUpdateDestroyAPIView):
 class HomestayAvailabilityView(APIView):
     permission_classes = (permissions.AllowAny,)
 
+    #Lấy dữ liệu
     def get(self, request, id):
         homestay = get_object_or_404(Homestay, id=id)
         check_in = request.query_params.get("check_in")
@@ -128,12 +137,15 @@ class HomestayImageListCreateView(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticated, IsHost, IsOwnerOfHomestayInUrl)
     parser_classes = (MultiPartParser, FormParser)
 
+    #Lấy dữ liệu
     def get_homestay(self):
         return get_object_or_404(Homestay, id=self.kwargs["id"])
 
+    #Truy vấn dữ liệu
     def get_queryset(self):
         return self.get_homestay().images.all()
 
+    #chuẩn bị khuôn
     def get_serializer_class(self):
         if self.request.method == "POST":
             return HomestayImageWriteSerializer
@@ -141,11 +153,13 @@ class HomestayImageListCreateView(generics.ListCreateAPIView):
 
         return HomestayImageSerializer
 
+    #truyền dữ liệu vào khuôn
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
         ctx["homestay"] = self.get_homestay()
         return ctx
 
+    #Thêm dữ liệu
     def perform_create(self, serializer):
         serializer.save(homestay=self.get_homestay())
 
@@ -167,9 +181,11 @@ class BlockedDateListCreateView(generics.ListCreateAPIView):
     def get_homestay(self):
         return get_object_or_404(Homestay, id=self.kwargs["id"])
 
+    #Truy vấn dữ liệu
     def get_queryset(self):
         return self.get_homestay().blocked_dates.all()
 
+    #truyền dữ liệu vào khuôn
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
         ctx["homestay"] = self.get_homestay()

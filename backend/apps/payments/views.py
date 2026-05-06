@@ -14,7 +14,7 @@ from apps.users.models import User
 from apps.payments.serializers import PaymentCreateSerializer, PaymentSerializer
 from apps.payments import vnpay as vnpay_util
 
-
+#PaymentCreateView: Tạo thanh toán
 class PaymentCreateView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -69,6 +69,7 @@ class PaymentCreateView(APIView):
         return Response({"redirect_url": url, "payment": PaymentSerializer(payment).data})
 
 
+#VNPayReturnView: Trả về kết quả thanh toán VNPay
 class VNPayReturnView(APIView):
     permission_classes = (permissions.AllowAny,)
 
@@ -117,6 +118,7 @@ class VNPayReturnView(APIView):
         return Response(PaymentSerializer(payment).data)
 
 
+#StripeWebhookView: Trả về kết quả thanh toán Stripe
 class StripeWebhookView(APIView):
     permission_classes = (permissions.AllowAny,)
 
@@ -127,6 +129,7 @@ class StripeWebhookView(APIView):
         return Response({"received": True})
 
 
+#PaymentByBookingView: Lấy thông tin thanh toán theo booking
 class PaymentByBookingView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 

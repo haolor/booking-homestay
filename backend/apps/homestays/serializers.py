@@ -10,8 +10,9 @@ from apps.homestays.models import (
     WishlistItem,
 )
 
-
+#AmenitySerializer: Dùng để hiển thị thông tin tiện ích
 class AmenitySerializer(serializers.ModelSerializer):
+    #chuẩn bị khuôn
     class Meta:
         model = Amenity
         fields = ("id", "name", "icon", "category")
@@ -23,11 +24,14 @@ class HomestayImageSerializer(serializers.ModelSerializer):
         fields = ("id", "url", "cloudinary_public_id", "is_cover", "order", "created_at")
         read_only_fields = ("id", "created_at")
 
-
+#HomestayListSerializer: Dùng để hiển thị danh sách homestay
 class HomestayListSerializer(serializers.ModelSerializer):
+    #chuẩn bị khuôn
     cover_url = serializers.SerializerMethodField()
+    #chuẩn bị khuôn
     amenities = serializers.SerializerMethodField()
 
+    #chuẩn bị khuôn
     class Meta:
         model = Homestay
         fields = (
@@ -46,15 +50,18 @@ class HomestayListSerializer(serializers.ModelSerializer):
             "amenities",
         )
 
+    #Lấy dữ liệu
     def get_cover_url(self, obj):
         img = obj.images.filter(is_cover=True).first() or obj.images.order_by("order").first()
         return img.url if img else None
-
+    
+    #Lấy dữ liệu
     def get_amenities(self, obj):
         ids = obj.homestay_amenities.values_list("amenity_id", flat=True)
         return list(map(str, ids))
 
 
+#HomestayDetailSerializer: Dùng để hiển thị chi tiết homestay
 class HomestayDetailSerializer(serializers.ModelSerializer):
     images = HomestayImageSerializer(many=True, read_only=True)
     amenities = serializers.PrimaryKeyRelatedField(
@@ -91,6 +98,7 @@ class HomestayDetailSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("host", "avg_rating", "created_at", "updated_at")
 
+    #Lấy dữ liệu
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["amenities"] = AmenitySerializer(
@@ -118,7 +126,7 @@ class HomestayDetailSerializer(serializers.ModelSerializer):
                 HomestayAmenity.objects.create(homestay=instance, amenity=a)
         return instance
 
-
+#HomestayImageWriteSerializer: Dùng để thêm ảnh vào homestay
 class HomestayImageWriteSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(write_only=True, required=True)
 
@@ -150,7 +158,7 @@ class HomestayImageWriteSerializer(serializers.ModelSerializer):
             )
         return img
 
-
+#BlockedDateSerializer: Dùng để thêm ngày bị chặn vào homestay
 class BlockedDateSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlockedDate
@@ -161,6 +169,7 @@ class BlockedDateSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+#WishlistSerializer: Dùng để thêm homestay vào danh sách yêu thích
 class WishlistSerializer(serializers.ModelSerializer):
     class Meta:
         model = WishlistItem
