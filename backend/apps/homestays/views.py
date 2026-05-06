@@ -57,13 +57,13 @@ class HomestayListCreateView(generics.ListCreateAPIView):
             return HomestayDetailSerializer
         return HomestayListSerializer
 
-    #xác thực quyền hạn
+    #bước 1 : xác thực quyền hạn
     def get_permissions(self):
         if self.request.method == "POST":
             return [permissions.IsAuthenticated(), IsHost()]
         return [permissions.AllowAny()]
 
-    #Thêm dữ liệu
+    #bước 3 : Thêm dữ liệu
     def perform_create(self, serializer):
         serializer.save(host=self.request.user)
 

@@ -1,11 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useMe } from '../hooks/useMe';
 import { HomestayCard } from '../components/homestay/HomestayCard';
 import { api } from '../services/api';
 import type { HomestayListItem } from '../types';
 
 export function Search() {
   const [city, setCity] = useState('');
+  const { data: me } = useMe();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (me?.role === 'host') {
+      navigate('/', { replace: true });
+    }
+  }, [me, navigate]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['homestays', city],

@@ -12,6 +12,7 @@ import { BookingDetail } from './pages/BookingDetail';
 import { Home } from './pages/Home';
 import { HomestayDetailPage } from './pages/HomestayDetail';
 import { HostListings } from './pages/HostListings';
+import { HostRevenue } from './pages/HostRevenue';
 import { Login } from './pages/Login';
 import { MyBookings } from './pages/MyBookings';
 import { PaymentVNPayReturn } from './pages/PaymentVNPayReturn';
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="my-bookings" element={<MyBookings />} />
           <Route path="host/listings" element={<HostListings />} />
+          <Route path="host/revenue" element={<HostRevenue />} />
           <Route path="bookings/:id" element={<BookingDetail />} />
           <Route path="payment/vnpay-return" element={<PaymentVNPayReturn />} />
           <Route path="*" element={<Navigate to="/" replace />} />

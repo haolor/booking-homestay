@@ -1,4 +1,6 @@
 from datetime import timedelta
+from django.db.models import Sum, Count
+from django.db.models.functions import TruncMonth
 
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -162,3 +164,58 @@ class BookingCheckinView(APIView):
             
         booking.save(update_fields=["status", "checked_in_at", "updated_at"])
         return Response(BookingSerializer(booking).data)
+
+
+class HostRevenueView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        if request.user.role != User.Role.HOST and request.user.role != User.Role.ADMIN:
+            raise PermissionDenied("Only hosts can view revenue.")
+        
+        # Base queryset for revenue-generating bookings
+        # As requested: payment (confirmed), checked-in, and completed are all added to revenue
+        qs = Booking.objects.filter(
+            status__in=[
+                Booking.Status.CONFIRMED,
+                Booking.Status.CHECKED_IN,
+                Booking.Status.COMPLETED
+            ]
+        )
+        
+        if request.user.role == User.Role.HOST:
+            qs = qs.filter(homestay__host=request.user)
+            
+        total_revenue = qs.aggregate(total=Sum('total_price'))['total'] or 0
+        total_bookings = qs.count()
+        
+        # Monthly revenue
+        monthly_stats = qs.annotate(month=TruncMonth('created_at')) \
+            .values('month') \
+            .annotate(revenue=Sum('total_price'), count=Count('id')) \
+            .order_by('month')
+            
+        # Revenue by homestay
+        homestay_stats = qs.values('homestay__id', 'homestay__title') \
+            .annotate(revenue=Sum('total_price'), count=Count('id')) \
+            .order_by('-revenue')
+            
+        return Response({
+            "total_revenue": float(total_revenue),
+            "total_bookings": total_bookings,
+            "monthly_stats": [
+                {
+                    "month": item['month'].strftime('%Y-%m'),
+                    "revenue": float(item['revenue']),
+                    "count": item['count']
+                } for item in monthly_stats
+            ],
+            "homestay_stats": [
+                {
+                    "homestay_id": item['homestay__id'],
+                    "homestay_name": item['homestay__title'],
+                    "revenue": float(item['revenue']),
+                    "count": item['count']
+                } for item in homestay_stats
+            ]
+        })

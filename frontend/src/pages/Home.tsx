@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { useMe } from '../hooks/useMe';
 import { HomestayCard } from '../components/homestay/HomestayCard';
 import { api } from '../services/api';
 import type { HomestayListItem } from '../types';
@@ -17,6 +18,8 @@ export function Home() {
     queryFn: fetchHomestaysPreview,
   });
 
+  const { data: me } = useMe();
+  const isHost = me?.role === 'host';
   const items = data ?? [];
 
   return (
@@ -37,10 +40,14 @@ export function Home() {
           <p className="mt-5 max-w-xl text-lg text-stone-600 leading-relaxed">
             Tìm chỗ nghỉ theo thành phố, xem ảnh thật & vị trí trên bản đồ. Đặt phòng nhanh với luồng MVP theo backend hiện tại.
           </p>
+          {/* tìm kiếm */}
           <div className="mt-10 flex flex-wrap gap-4">
-            <Link to="/search" className="btn-primary px-8 py-3 rounded-2xl text-base">
-              Tìm homestay
-            </Link>
+            {!isHost && (
+              <Link to="/search" className="btn-primary px-8 py-3 rounded-2xl text-base">
+                Tìm homestay
+              </Link>
+            )}
+            {/* đăng ký */}
             <Link
               to="/register"
               className="btn-outline px-8 py-3 rounded-2xl text-base border-stone-200"
@@ -78,13 +85,16 @@ export function Home() {
               Dữ liệu demo tải trực tiếp từ API ({isLoading ? 'đang kết nối…' : `${items.length} căn hiển thị`}).
             </p>
           </div>
-          <Link
-            to="/search"
-            className="text-brand-700 font-semibold hover:text-brand-900 flex items-center gap-1 transition"
-          >
-            Xem toàn bộ
-            <span aria-hidden>→</span>
-          </Link>
+          {/* tìm kiếm */}
+          {!isHost && (
+            <Link
+              to="/search"
+              className="text-brand-700 font-semibold hover:text-brand-900 flex items-center gap-1 transition"
+            >
+              Xem toàn bộ
+              <span aria-hidden>→</span>
+            </Link>
+          )}
         </div>
 
         {isLoading && (
@@ -94,7 +104,7 @@ export function Home() {
             ))}
           </div>
         )}
-
+        {/* nếu chưa chạy được backend hoặc chưa có dữ liệu nào trong API thì hiển thị thông báo này */}
         {!isLoading && items.length === 0 && (
           <div className="mt-12 rounded-3xl border border-dashed border-stone-300 bg-stone-50/80 px-8 py-16 text-center">
             <p className="text-stone-600 font-medium">Chưa có homestay trong API.</p>

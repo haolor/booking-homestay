@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useMe } from '../hooks/useMe';
 import { api } from '../services/api';
 import { useAppSelector } from '../store';
 import type { HomestayDetail } from '../types';
@@ -13,6 +14,7 @@ export function HomestayDetailPage() {
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(2);
+  const { data: me } = useMe();
 
   const { data: h, isLoading } = useQuery({
     queryKey: ['homestay', id],
@@ -55,6 +57,15 @@ export function HomestayDetailPage() {
       await api.post('/homestays/wishlist/', { homestay: id });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['wishlist'] }),
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async (newStatus: string) => {
+      await api.patch(`/homestays/${id}/`, { status: newStatus });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['homestay', id] });
+    },
   });
 
   if (isLoading || !h) {
@@ -127,85 +138,136 @@ export function HomestayDetailPage() {
           </p>
           <p className="text-xs font-medium text-stone-400 mt-1 uppercase tracking-wide">Giá mỗi đêm</p>
         </div>
-        {tokens && (
-          <button
-            type="button"
-            onClick={() => wishMutation.mutate()}
-            className="w-full btn-outline rounded-2xl py-2.5 text-sm border-stone-200"
-          >
-            Lưu yêu thích
-          </button>
-        )}
-        <label className="block text-sm font-semibold text-ink">
-          Check-in
-          <input
-            type="date"
-            value={checkIn}
-            onChange={(e) => setCheckIn(e.target.value)}
-            className="input-field mt-2"
-          />
-        </label>
-        <label className="block text-sm font-semibold text-ink">
-          Check-out
-          <input
-            type="date"
-            value={checkOut}
-            onChange={(e) => setCheckOut(e.target.value)}
-            className="input-field mt-2"
-          />
-        </label>
-        <label className="block text-sm font-semibold text-ink">
-          Số khách
-          <input
-            type="number"
-            min={1}
-            value={guests}
-            onChange={(e) => setGuests(Number(e.target.value))}
-            className="input-field mt-2"
-          />
-        </label>
-        {checkIn && checkOut && (
-          <div className="space-y-2">
-            <p className="text-sm font-medium px-3 py-2 rounded-xl bg-stone-50 border border-stone-100">
-              Còn trống:{' '}
-              <span className={avail ? 'text-emerald-700' : 'text-red-600'}>
-                {avail === undefined ? '…' : avail ? 'Có' : 'Không'}
-              </span>
-            </p>
-            <div className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-700 space-y-1">
-              <div className="flex items-center justify-between">
-                <span>Tiền phòng ({nights} đêm)</span>
-                <span>{subtotal.toLocaleString('vi-VN')} ₫</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Phí dịch vụ (5%)</span>
-                <span>{serviceFee.toLocaleString('vi-VN')} ₫</span>
-              </div>
-              <div className="h-px bg-stone-200 my-1" />
-              <div className="flex items-center justify-between font-semibold text-brand-700">
-                <span>Tổng thanh toán (ước tính)</span>
-                <span>{estimatedTotal.toLocaleString('vi-VN')} ₫</span>
+
+        {me?.id === h.host ? (
+          <div className="space-y-6 pt-4 border-t border-stone-100">
+            <div className="p-4 rounded-2xl bg-brand-50 border border-brand-100">
+              <h3 className="font-bold text-brand-900 text-sm mb-1">Quản lý Homestay</h3>
+              <p className="text-[11px] text-brand-700 leading-relaxed">
+                Đây là tài sản của bạn. Bạn có thể tạm ngưng hoặc cho phép hiển thị trên hệ thống.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm font-semibold text-ink">Trạng thái hiển thị</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateStatusMutation.mutate('published')}
+                  disabled={h.status === 'published' || updateStatusMutation.isPending}
+                  className={`py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    h.status === 'published'
+                      ? 'bg-emerald-600 text-white shadow-soft'
+                      : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                  }`}
+                >
+                  {h.status === 'published' ? '✓ Hiển thị' : 'Hiển thị'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateStatusMutation.mutate('suspended')}
+                  disabled={h.status === 'suspended' || updateStatusMutation.isPending}
+                  className={`py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    h.status === 'suspended'
+                      ? 'bg-red-600 text-white shadow-soft'
+                      : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                  }`}
+                >
+                  {h.status === 'suspended' ? '✓ Ngưng' : 'Ngưng'}
+                </button>
               </div>
             </div>
+
+            <Link
+              to="/host/listings"
+              className="block w-full text-center py-3 rounded-2xl bg-ink text-white font-bold text-sm shadow-soft hover:bg-stone-800 transition"
+            >
+              Xem danh sách của tôi
+            </Link>
           </div>
-        )}
-        {!tokens && (
-          <p className="text-sm text-stone-600">
-            <Link to="/login" className="font-semibold text-brand-700 hover:underline">
-              Đăng nhập
-            </Link>{' '}
-            để đặt phòng và lưu yêu thích.
-          </p>
-        )}
-        {tokens && (
-          <button
-            type="button"
-            disabled={!checkIn || !checkOut || avail === false || bookMutation.isPending}
-            onClick={() => bookMutation.mutate()}
-            className="btn-primary w-full rounded-2xl py-3"
-          >
-            {bookMutation.isPending ? 'Đang xử lý…' : 'Đặt phòng'}
-          </button>
+        ) : (
+          <>
+            {tokens && (
+              <button
+                type="button"
+                onClick={() => wishMutation.mutate()}
+                className="w-full btn-outline rounded-2xl py-2.5 text-sm border-stone-200"
+              >
+                Lưu yêu thích
+              </button>
+            )}
+            <label className="block text-sm font-semibold text-ink">
+              Check-in
+              <input
+                type="date"
+                value={checkIn}
+                onChange={(e) => setCheckIn(e.target.value)}
+                className="input-field mt-2"
+              />
+            </label>
+            <label className="block text-sm font-semibold text-ink">
+              Check-out
+              <input
+                type="date"
+                value={checkOut}
+                onChange={(e) => setCheckOut(e.target.value)}
+                className="input-field mt-2"
+              />
+            </label>
+            <label className="block text-sm font-semibold text-ink">
+              Số khách
+              <input
+                type="number"
+                min={1}
+                value={guests}
+                onChange={(e) => setGuests(Number(e.target.value))}
+                className="input-field mt-2"
+              />
+            </label>
+            {checkIn && checkOut && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium px-3 py-2 rounded-xl bg-stone-50 border border-stone-100">
+                  Còn trống:{' '}
+                  <span className={avail ? 'text-emerald-700' : 'text-red-600'}>
+                    {avail === undefined ? '…' : avail ? 'Có' : 'Không'}
+                  </span>
+                </p>
+                <div className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-700 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span>Tiền phòng ({nights} đêm)</span>
+                    <span>{subtotal.toLocaleString('vi-VN')} ₫</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Phí dịch vụ (5%)</span>
+                    <span>{serviceFee.toLocaleString('vi-VN')} ₫</span>
+                  </div>
+                  <div className="h-px bg-stone-200 my-1" />
+                  <div className="flex items-center justify-between font-semibold text-brand-700">
+                    <span>Tổng thanh toán (ước tính)</span>
+                    <span>{estimatedTotal.toLocaleString('vi-VN')} ₫</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {!tokens && (
+              <p className="text-sm text-stone-600">
+                <Link to="/login" className="font-semibold text-brand-700 hover:underline">
+                  Đăng nhập
+                </Link>{' '}
+                để đặt phòng và lưu yêu thích.
+              </p>
+            )}
+            {tokens && (
+              <button
+                type="button"
+                disabled={!checkIn || !checkOut || avail === false || bookMutation.isPending}
+                onClick={() => bookMutation.mutate()}
+                className="btn-primary w-full rounded-2xl py-3"
+              >
+                {bookMutation.isPending ? 'Đang xử lý…' : 'Đặt phòng'}
+              </button>
+            )}
+          </>
         )}
       </aside>
     </div>

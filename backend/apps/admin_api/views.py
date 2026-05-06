@@ -39,7 +39,11 @@ class AdminDashboardView(APIView):
         revenue = Payment.objects.filter(
             status=Payment.Status.SUCCESS,
             paid_at__gte=month_start,
-            booking__status__in=[Booking.Status.CONFIRMED, Booking.Status.COMPLETED],
+            booking__status__in=[
+                Booking.Status.CONFIRMED,
+                Booking.Status.CHECKED_IN,
+                Booking.Status.COMPLETED
+            ],
         ).aggregate(total=Sum("amount"))["total"] or Decimal("0")
 
         bookings_by_status = dict(

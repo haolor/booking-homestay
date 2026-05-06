@@ -41,14 +41,16 @@ export function PublicLayout() {
           </Link>
 
           <nav className="flex items-center gap-1 text-sm flex-wrap justify-end">
-            <NavLink
-              to="/search"
-              className={({ isActive }) =>
-                `rounded-full px-3.5 py-2 transition ${isActive ? navActive : navInactive}`
-              }
-            >
-              Khám phá
-            </NavLink>
+            {!isHost && (
+              <NavLink
+                to="/search"
+                className={({ isActive }) =>
+                  `rounded-full px-3.5 py-2 transition ${isActive ? navActive : navInactive}`
+                }
+              >
+                Khám phá
+              </NavLink>
+            )}
 
             {tokens && (
               <>
@@ -60,6 +62,16 @@ export function PublicLayout() {
                     }
                   >
                     Quản lý nhà
+                  </NavLink>
+                )}
+                {isHost && (
+                  <NavLink
+                    to="/host/revenue"
+                    className={({ isActive }) =>
+                      `rounded-full px-3.5 py-2 transition ${isActive ? navActive : navInactive}`
+                    }
+                  >
+                    Doanh thu
                   </NavLink>
                 )}
                 {isAdmin && (
